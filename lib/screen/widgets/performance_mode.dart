@@ -19,7 +19,7 @@ class PerformanceMode extends StatelessWidget {
               ? Colors.deepPurple
               : (mode == "economy")
                   ? Colors.green
-                  : Colors.transparent),
+                  : Colors.white70),
       child: Center(
         child: Text(
           mode.toUpperCase(),
