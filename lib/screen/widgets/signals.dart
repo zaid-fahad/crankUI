@@ -37,29 +37,30 @@ class Signals extends StatelessWidget {
         Image.asset("images/battery.png",
             color: (vehicle.isBatteryCharging) ? Colors.green : Colors.red,
             width: (20 * screenHeight) / 480),
-        Image.asset("images/malfunction.png",
-            color: (vehicle.isMILon) ? Colors.red : idleColor,
-            width: (20 * screenHeight) / 480),
-        //
-        Image.asset("images/openDoor.png",
-            color: (vehicle.isMILon) ? Colors.white : idleColor,
-            width: (20 * screenHeight) / 480),
 
-        Image.asset("images/seatBelt.png",
-            color: (vehicle.isMILon) ? Colors.white : idleColor,
-            width: (20 * screenHeight) / 480),
+        // Image.asset("images/malfunction.png",
+        //     color: (vehicle.isMILon) ? Colors.red : idleColor,
+        //     width: (20 * screenHeight) / 480),
+        // //
+        // Image.asset("images/openDoor.png",
+        //     color: (vehicle.isMILon) ? Colors.white : idleColor,
+        //     width: (20 * screenHeight) / 480),
+        //
+        // Image.asset("images/seatBelt.png",
+        //     color: (vehicle.isMILon) ? Colors.white : idleColor,
+        //     width: (20 * screenHeight) / 480),
 
         //
-        Image.asset("images/lane.png",
-            color: (vehicle.isSteeringLaneWarning) ? Colors.white : idleColor,
-            width: (25 * screenHeight) / 480),
-        Image.asset("images/cruise.png",
-            color: (vehicle.isSteeringCruiseEnable)
-                ? (vehicle.isSteeringCruiseSet)
-                    ? Colors.green
-                    : Colors.orange
-                : idleColor,
-            width: (20 * screenHeight) / 480),
+        // Image.asset("images/lane.png",
+        //     color: (vehicle.isSteeringLaneWarning) ? Colors.white : idleColor,
+        //     width: (25 * screenHeight) / 480),
+        // Image.asset("images/cruise.png",
+        //     color: (vehicle.isSteeringCruiseEnable)
+        //         ? (vehicle.isSteeringCruiseSet)
+        //             ? Colors.green
+        //             : Colors.orange
+        //         : idleColor,
+        //     width: (20 * screenHeight) / 480),
       ],
     );
   }
