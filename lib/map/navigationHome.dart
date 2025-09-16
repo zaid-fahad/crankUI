@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.0
 
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -22,7 +22,8 @@ class _NavigationHomeState extends ConsumerState<NavigationHome> {
   Timer timerPolyline = Timer.periodic(const Duration(hours: 10), ((timer) {}));
   double pathStroke = 5;
   late MapController mapController;
-  // randomly initialization of the variable
+
+  // initial locations
   LatLng src = LatLng(31.71, 76.95);
   LatLng markerLocation = LatLng(31.71, 76.95);
 
@@ -36,51 +37,61 @@ class _NavigationHomeState extends ConsumerState<NavigationHome> {
       var polylineDB = ref.read(polyLineStateProvider);
       final polylineDBNotifier = ref.read(polyLineStateProvider.notifier);
       final clusterConfig = ref.read(clusterConfigStateprovider);
-      // timer for updating map center and zoom
+
+      // timer for updating map center and rotation
       timerCurrLocation = Timer.periodic(const Duration(seconds: 2), (timer) {
         polylineDB = ref.read(polyLineStateProvider);
-
         vehicle = ref.read(vehicleSignalProvider);
+
         markerLocation = LatLng(vehicle.currLat, vehicle.currLng);
-        // move and center
+
+        // move map
         mapController.move(LatLng(vehicle.currLat, vehicle.currLng), 15);
 
-        // rotate
+        // calculate rotation
         double rotationDegree = 0;
         int n = polylineDB.currPolyLineList.length;
         if (polylineDB.currPolyLineList.isNotEmpty && n > 1) {
           rotationDegree = calcAngle(
-              polylineDB.currPolyLineList[0], polylineDB.currPolyLineList[1]);
-
+            polylineDB.currPolyLineList[0],
+            polylineDB.currPolyLineList[1],
+          );
           rotationDegree = (rotationDegree.isNaN) ? 0 : rotationDegree;
         }
-        // print("Rotation:$rotationDegree");
+
         mapController.rotate(-1 * rotationDegree);
       });
 
-      // update polyline in polyline db
-      if (polylineDB.currPolyLineList.isEmpty && clusterConfig.orsApiKey.isNotEmpty) {
+      // update polyline periodically
+      if (polylineDB.currPolyLineList.isEmpty &&
+          clusterConfig.orsApiKey.isNotEmpty) {
         timerPolyline.cancel();
         timerPolyline =
             Timer.periodic(const Duration(seconds: 10), (timer) async {
-          List data = await getJsonData(ref, vehicle.currLat, vehicle.currLng,
-              vehicle.desLat, vehicle.desLng);
-          List<LatLng> currList =
+              List data = await getJsonData(
+                ref,
+                vehicle.currLat,
+                vehicle.currLng,
+                vehicle.desLat,
+                vehicle.desLng,
+              );
+              List<LatLng> currList =
               data.map((element) => LatLng(element[1], element[0])).toList();
-          polylineDBNotifier.update(currPolyLineList: currList);
-        });
+              polylineDBNotifier.update(currPolyLineList: currList);
+            });
       }
     });
   }
 
   @override
   void dispose() {
-    super.dispose();
     timerCurrLocation.cancel();
     timerPolyline.cancel();
+    super.dispose();
   }
 
   double tempangle = 0;
+
   @override
   Widget build(BuildContext context) {
     final currListProvider = ref.watch(polyLineStateProvider);
@@ -89,15 +100,14 @@ class _NavigationHomeState extends ConsumerState<NavigationHome> {
     return FlutterMap(
       mapController: mapController,
       options: MapOptions(
-        rotation: 0,
-        center: src,
+        initialCenter: src,
+        initialZoom: 12,
         minZoom: 12,
-        zoom: 12,
         maxZoom: 22.0,
         keepAlive: true,
       ),
-      layers: [
-        TileLayerOptions(
+      children: [
+        TileLayer(
           maxZoom: 22,
           maxNativeZoom: 18,
           subdomains: ["a", "b", "c"],
@@ -105,31 +115,25 @@ class _NavigationHomeState extends ConsumerState<NavigationHome> {
           userAgentPackageName: 'dev.fleaflet.flutter_map.example',
         ),
         if (currPolyLineList.isNotEmpty)
-          PolylineLayerOptions(
-            polylineCulling: false,
+          PolylineLayer(
             polylines: [
-              if (currPolyLineList.isNotEmpty)
-                Polyline(
-                  strokeWidth: pathStroke,
-                  points: currPolyLineList,
-                  color: Colors.blue,
-                ),
-            ],
-          ),
-        if (currPolyLineList.isNotEmpty)
-          MarkerLayerOptions(
-            rotate: true,
-            markers: [
-              Marker(
-                point: markerLocation,
-                width: 70,
-                height: 70,
-                builder: (context) => Image.asset(
-                  "images/car.png",
-                ),
+              Polyline(
+                strokeWidth: pathStroke,
+                points: currPolyLineList,
+                color: Colors.blue,
               ),
             ],
           ),
+        MarkerLayer(
+          markers: [
+            Marker(
+              point: markerLocation,
+              width: 70,
+              height: 70,
+              child: Image.asset("images/car.png"),
+            ),
+          ],
+        ),
       ],
     );
   }

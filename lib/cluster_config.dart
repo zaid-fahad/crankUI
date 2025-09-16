@@ -1,9 +1,9 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.0
 
 import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:flutter_cluster_dashboard/vehicle_signal/initial_socket_connection.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_cluster_dashboard/vehicle_signal/initial_socket_connection.dart';
 import 'package:yaml/yaml.dart';
 
 class GetConfig extends ConsumerStatefulWidget {
@@ -21,16 +21,14 @@ class _GetConfigState extends ConsumerState<GetConfig> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       final configStateProvider = ref.read(clusterConfigStateprovider.notifier);
 
-      String configFilePath = '/etc/xdg/AGL/flutter-cluster-dashboard.yaml';
-      String orsKeyFilePath = '/etc/default/openroutekey';
-      
-      String keyContent = "";
+      const configFilePath = '/etc/xdg/AGL/flutter-cluster-dashboard.yaml';
+      const orsKeyFilePath = '/etc/default/openroutekey';
 
       final configFile = File(configFilePath);
       final orsKeyFile = File(orsKeyFilePath);
 
       configFile.readAsString().then((content) {
-        final dynamic yamlMap = loadYaml(content);
+        final yamlMap = loadYaml(content);
         configStateProvider.update(
           hostname: yamlMap['hostname'],
           port: yamlMap['port'],
@@ -42,11 +40,12 @@ class _GetConfigState extends ConsumerState<GetConfig> {
       });
 
       orsKeyFile.readAsString().then((content) {
-        keyContent = content.split(':')[1].trim();
-        if (keyContent.isNotEmpty && keyContent != 'YOU_NEED_TO_SET_IT_IN_LOCAL_CONF') {
+        String keyContent = content.split(':')[1].trim();
+        if (keyContent.isNotEmpty &&
+            keyContent != 'YOU_NEED_TO_SET_IT_IN_LOCAL_CONF') {
           configStateProvider.update(orsApiKey: keyContent);
         } else {
-          print("WARNING: openrouteservice API Key not found !");
+          print("WARNING: openrouteservice API Key not found!");
         }
       });
     });
@@ -55,29 +54,39 @@ class _GetConfigState extends ConsumerState<GetConfig> {
   @override
   Widget build(BuildContext context) {
     final config = ref.watch(clusterConfigStateprovider);
-    if (config.hostname == "" ||
+
+    if (config.hostname.isEmpty ||
         config.port == 0 ||
-        config.kuksaAuthToken == "" ||
+        config.kuksaAuthToken.isEmpty ||
         config.homeLat == 0 ||
         config.homeLng == 0 ||
-        config.orsPathParam == "") {
-      return Scaffold(
-        body: Center(
-            child: Column(
+        config.orsPathParam.isEmpty) {
+      return Center(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: const [
-            Text("ERROR",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             Text(
-                "Something Wrong with config file! Check config.yaml file and restart"),
+              "ERROR",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              "Something Wrong with config file! Check config.yaml file and restart",
+              textAlign: TextAlign.center,
+            ),
           ],
-        )),
+        ),
       );
     }
+
     return InitialScreen(client: widget.client);
   }
 }
+
+// ----------------------------
+// Cluster Config State
+// ----------------------------
 
 class ClusterConfig {
   ClusterConfig({
@@ -89,6 +98,7 @@ class ClusterConfig {
     required this.homeLat,
     required this.homeLng,
   });
+
   final String hostname;
   final int port;
   final String kuksaAuthToken;
@@ -110,16 +120,17 @@ class ClusterConfig {
         hostname: hostname ?? this.hostname,
         port: port ?? this.port,
         kuksaAuthToken: kuksaAuthToken ?? this.kuksaAuthToken,
-        orsApiKey: orsApiKey ?? this.orsApiKey,
-        orsPathParam: orsPathParam ?? this.orsPathParam,
         homeLat: homeLat ?? this.homeLat,
         homeLng: homeLng ?? this.homeLng,
+        orsApiKey: orsApiKey ?? this.orsApiKey,
+        orsPathParam: orsPathParam ?? this.orsPathParam,
       );
 }
 
 class ClusterConfigStateNotifier extends StateNotifier<ClusterConfig> {
   ClusterConfigStateNotifier() : super(_initialValue);
-  static final ClusterConfig _initialValue = ClusterConfig(
+
+  static final _initialValue = ClusterConfig(
     hostname: "",
     port: 0,
     kuksaAuthToken: "",
@@ -128,6 +139,7 @@ class ClusterConfigStateNotifier extends StateNotifier<ClusterConfig> {
     homeLat: 0,
     homeLng: 0,
   );
+
   void update({
     String? hostname,
     int? port,
@@ -150,5 +162,5 @@ class ClusterConfigStateNotifier extends StateNotifier<ClusterConfig> {
 }
 
 final clusterConfigStateprovider =
-    StateNotifierProvider<ClusterConfigStateNotifier, ClusterConfig>(
+StateNotifierProvider<ClusterConfigStateNotifier, ClusterConfig>(
         (ref) => ClusterConfigStateNotifier());

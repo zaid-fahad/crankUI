@@ -1,8 +1,8 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.0
 
 import 'dart:math';
 import 'dart:ui' as ui;
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 class BottomBarPainter extends CustomPainter {
   @override
@@ -14,18 +14,23 @@ class BottomBarPainter extends CustomPainter {
     double y = height;
 
     final double width = size.width - 2 * x;
+
     final paint = Paint()
-      ..color = const ui.Color.fromARGB(255, 36, 36, 36)
+      ..color = const ui.Color(0xFF242424)
       ..strokeWidth = 5
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
+
     final paint2 = Paint()
       ..style = PaintingStyle.fill
       ..shader = ui.Gradient.linear(
-          Offset((x + width / 2), 0), Offset((x + width / 2), height), [
-        const ui.Color.fromARGB(255, 25, 24, 24),
-        Colors.black,
-      ]);
+        Offset(x + width / 2, 0),
+        Offset(x + width / 2, height),
+        [
+          const ui.Color(0xFF191818),
+          const ui.Color(0xFF000000),
+        ],
+      );
 
     final path = Path()
       ..moveTo(0, size.height)
