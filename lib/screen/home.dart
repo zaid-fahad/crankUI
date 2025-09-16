@@ -93,76 +93,122 @@ class Home extends ConsumerWidget {
             ),
           ),
 
-          // Mid section
+          // Mid section with blinkers
+          // Mid section with animated blinker glow
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final midHeight = constraints.maxHeight;
 
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                return Stack(
                   children: [
-                    // Performance mode
-                    PerformanceMode(
-                      size: Size(
-                        (90 * screenHeight) / 480,
-                        (20 * screenHeight) / 480,
-                      ),
-                      mode: vehicle.performanceMode,
-                    ),
-
-                    SizedBox(height: midHeight * 0.04),
-
-                    // Centered cluster: Stack for precise positioning
-                    Center(
-                      child: SizedBox(
-                        height: midHeight * 0.7,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            // Left Arc
-                            Align(
-                              alignment: const Alignment(-0.2, -0.6), // left
-                              child: SizedBox(
-                                height: midHeight * 0.6,
-                                child: LeftArc(screenHeight: midHeight),
+                    // Left Blinker Glow
+                    if (vehicle.isLeftIndicator)
+                      Positioned(
+                        left: -50,
+                        top: midHeight * 0.15,
+                        bottom: midHeight * 0.15,
+                        child: Container(
+                          width: 20, // wider
+                          decoration: BoxDecoration(
+                            color: const Color(0x999fFF00), // semi-transparent green
+                            borderRadius: BorderRadius.circular(50), // rounder
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0x999fFF00),
+                                blurRadius: 200,
+                                spreadRadius: 100,
+                                offset: Offset(0, 0),
                               ),
-                            ),
-
-                            // Speedometer
-                            SizedBox(
-                              height: midHeight * 0.7,
-                              child: SpeedGauge(
-                                screenHeight: midHeight * 1.2,
-                                guageColor: getGuageColor(vehicle.performanceMode),
-                              ),
-                            ),
-
-                            // Gear Arc (can shift slightly up without breaking center)
-                            Align(
-                              alignment: const Alignment(0.3, - 2.6), // right + slightly up
-                              child: SizedBox(
-                                height: midHeight * 0.6,
-                                child: GearArc(screenHeight: midHeight),
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
 
-                    SizedBox(height: midHeight * 0.05),
+                    // Right Blinker Glow
+                    if (vehicle.isRightIndicator)
+                      Positioned(
+                        right: -50,
+                        top: midHeight * 0.15,
+                        bottom: midHeight * 0.15,
+                        child: Container(
+                          width: 20,
+                          decoration: BoxDecoration(
+                            color: const Color(0x999fFF00),
+                            borderRadius: BorderRadius.circular(500),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0x999fFF00),
+                                blurRadius: 200,
+                                spreadRadius: 100,
+                                offset: Offset(0, 0),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
 
-                    // Warnings
-                    Signals(
-                      screenHeight: screenHeight,
-                      vehicle: vehicle,
+                    // Main Column (unchanged)
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        PerformanceMode(
+                          size: Size(
+                            (90 * screenHeight) / 480,
+                            (20 * screenHeight) / 480,
+                          ),
+                          mode: vehicle.performanceMode,
+                        ),
+
+                        SizedBox(height: midHeight * 0.04),
+
+                        // Center cluster
+                        Center(
+                          child: SizedBox(
+                            height: midHeight * 0.7,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Align(
+                                  alignment: const Alignment(-0.2, -0.6),
+                                  child: SizedBox(
+                                    height: midHeight * 0.6,
+                                    child: LeftArc(screenHeight: midHeight),
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: midHeight * 0.7,
+                                  child: SpeedGauge(
+                                    screenHeight: midHeight * 1.2,
+                                    guageColor: getGuageColor(vehicle.performanceMode),
+                                  ),
+                                ),
+                                Align(
+                                  alignment: const Alignment(0.3, -2.6),
+                                  child: SizedBox(
+                                    height: midHeight * 0.6,
+                                    child: GearArc(screenHeight: midHeight),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(height: midHeight * 0.05),
+
+                        Signals(
+                          screenHeight: screenHeight,
+                          vehicle: vehicle,
+                        ),
+                      ],
                     ),
                   ],
                 );
               },
             ),
           ),
+
         ],
       ),
     );
