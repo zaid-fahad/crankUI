@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
-
-import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_cluster_dashboard/screen/widgets/gear_arc.dart';
 import 'package:flutter_cluster_dashboard/screen/widgets/left_bar.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_cluster_dashboard/map/navigationHome.dart';
 import 'package:flutter_cluster_dashboard/provider.dart';
 import 'package:flutter_cluster_dashboard/screen/widgets/guages/guage_props.dart';
 import 'package:flutter_cluster_dashboard/screen/paints/topbar_paint.dart';
@@ -29,30 +26,13 @@ class Home extends ConsumerWidget {
 
   String addZero(int val) => val.toString().padLeft(2, '0');
 
-  double calcPadding(double value, double height) => (value * height) / 720;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final vehicle = ref.watch(vehicleSignalProvider);
     final clock = ref.watch(clockProvider);
 
     final padding = MediaQuery.of(context).padding;
-    final windowHeight = MediaQuery.of(context).size.height;
-    final windowWidth = MediaQuery.of(context).size.width;
-
-    double screenHeight = windowHeight;
-    double screenWidth = windowWidth;
-
-    double ratHeight = (windowWidth * 9) / 16;
-    double ratWidth = (windowHeight * 16) / 9;
-
-    if (ratWidth <= windowWidth) {
-      screenHeight = windowHeight;
-      screenWidth = ratWidth;
-    } else {
-      screenHeight = ratHeight;
-      screenWidth = windowWidth;
-    }
+    final screenHeight = MediaQuery.of(context).size.height;
 
     return Container(
       color: GuageProps.bgColor,
@@ -69,7 +49,8 @@ class Home extends ConsumerWidget {
                   isLefton: vehicle.isLeftIndicator,
                   isRighton: vehicle.isRightIndicator,
                 ),
-                Center(
+                Align(
+                  alignment: Alignment.center,
                   child: SizedBox(
                     width: (400 * screenHeight) / 480,
                     child: CustomPaint(
@@ -89,7 +70,7 @@ class Home extends ConsumerWidget {
                           Text(
                             "${clock.hour}:${addZero(clock.minute)}",
                             style: TextStyle(
-                              color: Colors.white,
+                              color: const Color(0xFFFFFFFF),
                               fontSize: (30 * screenHeight) / 480,
                               fontWeight: FontWeight.bold,
                             ),
@@ -114,69 +95,74 @@ class Home extends ConsumerWidget {
 
           // Mid section
           Expanded(
-            child: LayoutBuilder(builder: (context, constraints) {
-              final midHeight = constraints.maxHeight;
-              final midWidth = constraints.maxWidth / 2.0;
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final midHeight = constraints.maxHeight;
 
-              return Stack(
-                alignment: Alignment.center,
-                children: [
-                  // Left Arc
-                  Positioned(
-                    top: midHeight * 0.15,
-                    left: midWidth - 200,
-                    child: SizedBox(
-                      height: midHeight * 0.6,
-                      child: LeftArc(screenHeight: screenHeight),
-                    ),
-                  ),
-
-                  // Gear Arc (Right)
-                  Positioned(
-                    top: midHeight * 0.05,
-                    right: midWidth - 385,
-                    child: SizedBox(
-                      height: midHeight * 0.6,
-                      child: GearArc(screenHeight: screenHeight),
-                    ),
-                  ),
-
-                  // Center Speedometer
-                  Center(
-                    child: SizedBox(
-                      height: midHeight * 0.7,
-                      child: SpeedGauge(
-                        screenHeight: screenHeight,
-                        guageColor: getGuageColor(vehicle.performanceMode),
-                      ),
-                    ),
-                  ),
-
-                  // Performance mode above speedometer
-                  Positioned(
-                    top: midHeight * 0.08,
-                    child: PerformanceMode(
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Performance mode
+                    PerformanceMode(
                       size: Size(
                         (90 * screenHeight) / 480,
                         (20 * screenHeight) / 480,
                       ),
                       mode: vehicle.performanceMode,
                     ),
-                  ),
 
-                  // Warnings below
-                  Positioned(
-                    bottom: midHeight * 0.05,
-                    child: Signals(
+                    SizedBox(height: midHeight * 0.04),
+
+                    // Centered cluster: Stack for precise positioning
+                    Center(
+                      child: SizedBox(
+                        height: midHeight * 0.7,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            // Left Arc
+                            Align(
+                              alignment: const Alignment(-0.2, -0.6), // left
+                              child: SizedBox(
+                                height: midHeight * 0.6,
+                                child: LeftArc(screenHeight: midHeight),
+                              ),
+                            ),
+
+                            // Speedometer
+                            SizedBox(
+                              height: midHeight * 0.7,
+                              child: SpeedGauge(
+                                screenHeight: midHeight * 1.2,
+                                guageColor: getGuageColor(vehicle.performanceMode),
+                              ),
+                            ),
+
+                            // Gear Arc (can shift slightly up without breaking center)
+                            Align(
+                              alignment: const Alignment(0.3, - 2.6), // right + slightly up
+                              child: SizedBox(
+                                height: midHeight * 0.6,
+                                child: GearArc(screenHeight: midHeight),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: midHeight * 0.05),
+
+                    // Warnings
+                    Signals(
                       screenHeight: screenHeight,
                       vehicle: vehicle,
                     ),
-                  ),
-                ],
-              );
-            }),
+                  ],
+                );
+              },
+            ),
           ),
-
         ],
       ),
     );
